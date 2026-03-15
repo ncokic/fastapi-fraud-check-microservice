@@ -1,31 +1,27 @@
 from contextlib import asynccontextmanager
-from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
+from app.config import settings
 from app.schemas import FraudAnalysisRequest, FraudAnalysisResponse
-from app.services import FraudChecker
+from app.services import FraudCheckerService
 
-
-BASE_DIR = Path(__file__).resolve().parent
-MODEL_PATH = BASE_DIR / "ml_models" / "fraud_check_model" / "fraud_model.joblib"
-SCALER_PATH = BASE_DIR / "ml_models" / "fraud_check_model" / "scaler.joblib"
 
 ml_models = {}
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    ml_models["fraud_checker"] = FraudChecker(
-        model_path=str(MODEL_PATH),
-        scaler_path=str(SCALER_PATH),
+    ml_models["fraud_checker"] = FraudCheckerService(
+        model_path=settings.model_path,
+        scaler_path=settings.scaler_path,
     )
     yield
     ml_models.clear()
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(lifespan=lifespan)
+    app = FastAPI(lifespan=lifespan, title="FastAPI Fraud Check Microservice")
 
     @app.get("/", include_in_schema=False)
     def home():
