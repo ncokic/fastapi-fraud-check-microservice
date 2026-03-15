@@ -1,0 +1,12 @@
+[project]
+name = "fastapi-fraud-microservice"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi[standard]>=0.135.1",
+    "imblearn>=0.0",
+    "pandas>=3.0.1",
+    "scikit-learn>=1.8.0",
+]
