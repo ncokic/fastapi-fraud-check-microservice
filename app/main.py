@@ -1,11 +1,12 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.responses import RedirectResponse
 
 from app.config import settings
 from app.schemas import FraudAnalysisRequest, FraudAnalysisResponse
 from app.services import FraudCheckerService
+from app.security import verify_hmac_signature
 
 
 ml_models = {}
@@ -28,10 +29,16 @@ def create_app() -> FastAPI:
         return RedirectResponse(url="/docs")
 
 
-    @app.post("/check_fraud", response_model=FraudAnalysisResponse, name="check_fraud")
+    @app.post(
+        "/check_fraud",
+        response_model=FraudAnalysisResponse,
+        name="check_fraud",
+        dependencies=[Depends(verify_hmac_signature)]
+    )
     def check_fraud(payload: FraudAnalysisRequest):
         return ml_models["fraud_checker"].predict(payload)
 
     return app
+
 
 app = create_app()
