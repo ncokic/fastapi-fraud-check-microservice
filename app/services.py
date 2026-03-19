@@ -16,7 +16,11 @@ class FraudCheckerService:
             "orders_last_24h": payload.orders_last_24h,
             "address_mismatch": payload.is_address_mismatch,
             "country_mismatch": payload.is_country_mismatch,
-            "account_age_min": payload.account_age_min
+            "account_age_min": payload.account_age_min,
+            "new_account": payload.is_new_account,
+            "high_velocity": payload.has_high_velocity,
+            "diff_country_new_acc": payload.diff_country_new_acc,
+            "diff_country_high_vel": payload.diff_country_high_vel
         }
         features_df = pd.DataFrame([features])
         scaled_features = self.scaler.transform(features_df)

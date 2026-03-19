@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 from imblearn.over_sampling import SMOTE
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -18,7 +17,7 @@ is_fraud = df.Class == 1
 training_df["orders_last_24h"] = np.where(
     is_fraud,
     np.random.poisson(lam=8, size=len(df)),
-    np.random.poisson(lam=1.5, size=len(df)),
+    np.random.poisson(lam=1.2, size=len(df)),
 )
 training_df.orders_last_24h = training_df.orders_last_24h.clip(0, 20)
 
@@ -48,6 +47,11 @@ training_df["account_age_min"] = np.where(
     ),
 )
 
+training_df["new_account"] = (training_df.account_age_min < 1440).astype(int)
+training_df["high_velocity"] = (training_df.orders_last_24h > 3).astype(int)
+training_df["diff_country_new_acc"] = (training_df.country_mismatch * training_df.new_account)
+training_df["diff_country_high_vel"] = (training_df.country_mismatch * training_df.high_velocity)
+
 X = training_df
 y = df.Class
 
@@ -55,22 +59,14 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )
 
-sm = SMOTE(random_state=42, sampling_strategy=0.1)
-X_train_res, y_train_res = sm.fit_resample(X_train, y_train)
-
 scaler = StandardScaler()
-X_train_res_scaled = scaler.fit_transform(X_train_res)
+X_train_scaled = scaler.fit_transform(X_train)
+
+sm = SMOTE(random_state=42, sampling_strategy=0.1)
+X_train_res, y_train_res = sm.fit_resample(X_train_scaled, y_train)
 
 model = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42)
-model.fit(X_train_res_scaled, y_train_res)
-
-X_test_scaled = scaler.transform(X_test)
-y_probs = model.predict_proba(X_test_scaled)[:, 1]
-y_pred = (y_probs > 0.7).astype(int)
-
-feat_imp = pd.Series(model.feature_importances_, index=X.columns)
-print(f"FEATURE IMPORTANCES:\n{feat_imp.sort_values(ascending=False)}\n")
-print(f"CLASSIFICATION REPORT:\n{classification_report(y_test, y_pred, target_names=["Legit", "Fraud"])}")
+model.fit(X_train_res, y_train_res)
 
 joblib.dump(model, "../app/ml_models/fraud_check_model/fraud_model.joblib")
 joblib.dump(scaler, "../app/ml_models/fraud_check_model/scaler.joblib")
