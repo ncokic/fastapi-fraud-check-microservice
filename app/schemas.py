@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+import enum
 
 
 class FraudAnalysisRequest(BaseModel):
@@ -40,3 +41,4 @@ class FraudAnalysisResponse(BaseModel):
     order_id: int
     risk_assessment: str
     risk_score: float
+    reasons: str | list[str]
