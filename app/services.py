@@ -6,9 +6,9 @@ from app.schemas import FraudAnalysisRequest
 
 
 class FraudCheckerService:
-    def __init__(self, model_path: str, scaler_path: str):
-        self.model = joblib.load(model_path)
-        self.scaler = joblib.load(scaler_path)
+    def __init__(self, model=None, scaler=None):
+        self.model = model or joblib.load(settings.model_path)
+        self.scaler = scaler or joblib.load(settings.scaler_path)
 
     def predict(self, payload: FraudAnalysisRequest):
         features_df = self._group_features(payload)

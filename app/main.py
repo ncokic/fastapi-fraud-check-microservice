@@ -1,28 +1,28 @@
 from contextlib import asynccontextmanager
+from typing import Annotated
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.responses import RedirectResponse
 
-from app.config import settings
 from app.schemas import FraudAnalysisRequest, FraudAnalysisResponse
-from app.services import FraudCheckerService
 from app.security import verify_hmac_signature
+from app.services import FraudCheckerService
 
-
-ml_models = {}
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI):
-    ml_models["fraud_checker"] = FraudCheckerService(
-        model_path=settings.model_path,
-        scaler_path=settings.scaler_path,
-    )
+async def lifespan(app: FastAPI):
+    app.state.fraud_checker = FraudCheckerService()
     yield
-    ml_models.clear()
+    del app.state.fraud_checker
+
+
+def get_fraud_checker(request: Request):
+    return request.app.state.fraud_checker
 
 
 def create_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan, title="FastAPI Fraud Check Microservice")
+
 
     @app.get("/", include_in_schema=False)
     def home():
@@ -35,8 +35,11 @@ def create_app() -> FastAPI:
         name="check_fraud",
         dependencies=[Depends(verify_hmac_signature)]
     )
-    def check_fraud(payload: FraudAnalysisRequest):
-        return ml_models["fraud_checker"].predict(payload)
+    def check_fraud(
+            payload: FraudAnalysisRequest,
+            model: Annotated[FraudCheckerService, Depends(get_fraud_checker)]
+    ):
+        return model.predict(payload)
 
     return app
 
