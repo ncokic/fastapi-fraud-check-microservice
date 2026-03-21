@@ -18,7 +18,7 @@ class FraudCheckerService:
         return {
             "order_id": payload.order_id,
             "risk_assessment": final_risk,
-            "risk_score": round(score * 100),
+            "risk_score": score,
             "reasons": reasons or "base_model_calculation"
         }
 
