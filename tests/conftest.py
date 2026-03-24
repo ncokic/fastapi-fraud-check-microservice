@@ -1,7 +1,7 @@
 import pytest
 
 from app.main import app
-from app.security import verify_hmac_signature
+from app.utils.security import verify_hmac_signature
 
 
 @pytest.fixture

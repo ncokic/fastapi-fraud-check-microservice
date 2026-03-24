@@ -5,8 +5,9 @@ from fastapi import FastAPI, Depends, Request
 from fastapi.responses import RedirectResponse
 
 from app.schemas import FraudAnalysisRequest, FraudAnalysisResponse
-from app.security import verify_hmac_signature
+from app.utils.security import verify_hmac_signature
 from app.services import FraudCheckerService
+from app.utils.error_handlers import register_error_handlers
 
 
 @asynccontextmanager
@@ -22,7 +23,7 @@ def get_fraud_checker(request: Request):
 
 def create_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan, title="FastAPI Fraud Check Microservice")
-
+    register_error_handlers(app)
 
     @app.get("/", include_in_schema=False)
     def home():
