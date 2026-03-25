@@ -5,9 +5,9 @@ from fastapi import FastAPI, Depends, Request
 from fastapi.responses import RedirectResponse
 
 from app.schemas import FraudAnalysisRequest, FraudAnalysisResponse
-from app.utils.security import verify_hmac_signature
 from app.services import FraudCheckerService
 from app.utils.error_handlers import register_error_handlers
+from app.utils.security import verify_hmac_signature
 
 
 @asynccontextmanager

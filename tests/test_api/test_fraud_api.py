@@ -2,7 +2,6 @@ import pytest
 
 from scripts.generate_hmac_signature import generate_hmac_signature
 
-
 ECOMMERCE_PAYLOAD = {
     "order_id": 100,
     "user_id": 75,

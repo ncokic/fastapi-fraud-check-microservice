@@ -1,8 +1,24 @@
 import hashlib
 import hmac
 import json
+from pathlib import Path
+from dotenv import load_dotenv
+
+env_path = Path(__file__).parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 from app.config import settings
+
+CUSTOM_PAYLOAD = {
+    "order_id": 10,
+    "user_id": 5,
+    "order_amount": 15.99,
+    "orders_last_24h": 1,
+    "is_shipping_billing_mismatch": False,
+    "shipping_country": "RS",
+    "ip_country": "RS",
+    "account_age_min": 5000
+}
 
 
 def generate_hmac_signature(payload):
@@ -20,3 +36,7 @@ def generate_hmac_signature(payload):
     ).hexdigest()
 
     return signature
+
+
+if __name__ == "__main__":
+    print(f"HMAC Signature: {generate_hmac_signature(CUSTOM_PAYLOAD)}")
